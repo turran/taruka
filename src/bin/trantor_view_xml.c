@@ -1,5 +1,13 @@
 #include <Trantor.h>
 
+typedef struct _Trantor_View_Xml
+{
+	Egueb_Dom_Node *svg;
+	int level;
+} Trantor_View_Xml;
+
+static Eina_Bool _generate_node(Egueb_Dom_Node *n, void *data);
+
 #if 0
 static char * _myelement_to_string(Egueb_Dom_Node *n)
 {
@@ -96,26 +104,98 @@ done:
 }
 #endif
 
-Evas_Object * trantor_view_xml_new(Evas *e, Egueb_Dom_Node *other_doc)
+static Eina_Bool _generate_element(Trantor_View_Xml *thiz, Egueb_Dom_Node *n)
 {
-	Evas_Object *o;
-	Egueb_Dom_Node *doc;
-	Egueb_Dom_Node *other_svg, *svg;
 	Egueb_Dom_Node *text;
+	Egueb_Dom_Node *tnode;
+	Egueb_Dom_Node *child = NULL;
+	Egueb_Dom_String *name;
+	Egueb_Svg_Font_Size font_size;
+	Egueb_Svg_Length y;
 
-	o = efl_svg_new(e);
-	doc = efl_svg_document_get(o);
+	egueb_dom_element_tag_name_get(n, &name);
+	text = egueb_svg_element_text_new();
+
+	font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
+	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_element_font_size_set(text, &font_size);
+	egueb_svg_length_set(&y, 12 * thiz->level, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_element_text_y_set(text, &y);
+	tnode = egueb_dom_text_new();
+
+	egueb_dom_character_data_append_data_inline(tnode, "<");
+	egueb_dom_character_data_append_data(tnode, name);
+	egueb_dom_node_child_append(text, tnode);
+
+	egueb_dom_node_child_append(thiz->svg, text);
+	/* now the attributes */
+	/* now the children */
+	egueb_dom_node_child_first_get(n, &child);
+	if (child)
+	{
+		egueb_dom_character_data_append_data_inline(tnode, ">");
+		do
+		{
+			Egueb_Dom_Node *next = NULL;
+
+			thiz->level++;
+			_generate_node(child, thiz);
+			egueb_dom_node_sibling_next_get(child, &next);
+			egueb_dom_node_unref(child);
+			child = next;
+		} while (child);
+	}
+	else
+	{
+		egueb_dom_character_data_append_data_inline(tnode, "/>");
+	}
+	return EINA_TRUE;
+}
+
+static Eina_Bool _generate_node(Egueb_Dom_Node *n, void *data)
+{
+	Trantor_View_Xml *thiz = data;
+	Egueb_Dom_Node_Type type;
+
+	egueb_dom_node_type_get(n, &type);
+	switch (type)
+	{
+		case EGUEB_DOM_NODE_TYPE_ELEMENT_NODE:
+		_generate_element(thiz, n);
+		break;
+
+		case EGUEB_DOM_NODE_TYPE_ATTRIBUTE_NODE:
+		case EGUEB_DOM_NODE_TYPE_TEXT_NODE:
+		case EGUEB_DOM_NODE_TYPE_CDATA_SECTION_NODE:
+		case EGUEB_DOM_NODE_TYPE_ENTITY_REFERENCE_NODE:
+		case EGUEB_DOM_NODE_TYPE_ENTITY_NODE:
+		case EGUEB_DOM_NODE_TYPE_PROCESSING_INSTRUCTION_NODE:
+		case EGUEB_DOM_NODE_TYPE_COMMENT_NODE:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT_NODE:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT_TYPE_NODE:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT_NODE:
+		case EGUEB_DOM_NODE_TYPE_NOTATION_NODE:
+		break;
+	}
+	return EINA_TRUE;
+}
+
+void trantor_view_xml_new(Egueb_Dom_Node *doc, Egueb_Dom_Node *other_doc)
+{
+	Trantor_View_Xml thiz;
+	Egueb_Dom_Node *other_svg, *svg;
+
 	svg = egueb_svg_element_svg_new();
 
 	egueb_dom_document_element_set(doc, egueb_dom_node_ref(svg));
 	egueb_dom_document_element_get(other_doc, &other_svg);
-	/* iterate over the whole tree of the other doc and create text
-	 * elements here
-	 */
-	text = egueb_svg_element_text_new();
-	egueb_dom_node_child_append(svg, text);
+
+	thiz.svg = svg;
+	thiz.level = 1;
+	_generate_node(other_svg,  &thiz);
+
 	egueb_dom_node_unref(svg);
 	egueb_dom_node_unref(other_svg);
-
-	return o;
+	egueb_dom_node_unref(doc);
+	egueb_dom_node_unref(other_doc);
 }

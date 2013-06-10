@@ -41,7 +41,7 @@ PKG_PROG_PKG_CONFIG
 
 ### Checks for libraries
 
-requirements_trantor="egueb-svg >= 0.0.21 ender >= 0.0.6 enesim >= 0.0.15 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0 efl_svg"
+requirements_trantor="egueb-dom >= 0.0.21 egueb-svg >= 0.0.21 ender >= 0.0.6 enesim >= 0.0.15 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0 efl_svg"
 AC_SUBST([requirements_trantor])
 PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
 

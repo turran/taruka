@@ -37,15 +37,21 @@ static void _cb_resize(Ecore_Evas *ee)
 
 	ecore_evas_geometry_get(ee, NULL, NULL, &width, &height);
 	evas = ecore_evas_get(ee);
-	/* resize the svg object */
+
+	/* resize the svg objects */
 	o = evas_object_name_find(evas, "svg");
-	evas_object_resize(o, width, height);
-	/* TODO put the controls on the same position */
+	evas_object_resize(o, width/2, height);
+
+	o = evas_object_name_find(evas, "xml");
+	evas_object_move(o, width/2, 0);
+	evas_object_resize(o, width/2, height);
 }
 
 int main(int argc, char *argv[])
 {
-	Trantor thiz;
+	Trantor *thiz;
+	Egueb_Dom_Node *svg_doc;
+	Egueb_Dom_Node *xml_doc;
 	Ecore_Evas *ee;
 	Evas *evas;
 	Evas_Object *o;
@@ -146,9 +152,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	thiz.width = width;
-	thiz.height = height;
-
 	ee = ecore_evas_new(engine, 0, 0, 0, 0, NULL);
 	if (!ee)
 		goto shutdown_esvg;
@@ -156,6 +159,12 @@ int main(int argc, char *argv[])
 	evas = ecore_evas_get(ee);
 	if (!evas)
 		goto free_ecore_evas;
+
+	thiz = calloc(1, sizeof(Trantor));
+	thiz->width = width;
+	thiz->height = height;
+	evas_data_attach_set(evas, thiz);
+
 	ecore_evas_callback_delete_request_set(ee, _cb_delete);
 	ecore_evas_callback_resize_set(ee, _cb_resize);
 
@@ -165,10 +174,21 @@ int main(int argc, char *argv[])
 	efl_svg_debug_damage_set(o, damages);
 	efl_svg_fps_set(o, fps);
 	evas_object_move(o, 0, 0);
-	evas_object_resize(o, width, height);
+	evas_object_resize(o, width/2, height);
 	evas_object_show(o);
 	evas_object_name_set(o, "svg");
-	thiz.svg = o;
+	thiz->svg = o;
+
+	/* create the xml object */
+	o = efl_svg_new(evas);
+	xml_doc = efl_svg_document_get(o);
+	svg_doc = efl_svg_document_get(thiz->svg);
+	trantor_view_xml_new(xml_doc, svg_doc);
+	evas_object_move(o, width/2, 0);
+	evas_object_resize(o, width/2, height);
+	evas_object_show(o);
+	evas_object_name_set(o, "xml");
+	thiz->xml = o;
 
 	ecore_evas_resize(ee, width, height);
 	ecore_evas_show(ee);
@@ -177,6 +197,8 @@ int main(int argc, char *argv[])
 
 	ecore_evas_shutdown();
 	efl_svg_shutdown();
+
+	free(thiz);
 
 	return 0;
 
