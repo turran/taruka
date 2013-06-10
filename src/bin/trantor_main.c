@@ -1,0 +1,191 @@
+#include "Trantor.h"
+#include <stdio.h>
+#include <getopt.h>
+
+typedef struct _Trantor
+{
+	char *location;
+	Evas_Object *svg;
+	Evas_Object *xml;
+	int width;
+	int height;
+} Trantor;
+
+static void help(const char *name)
+{
+	printf("Usage: %s [OPTIONS] FILE\n", name);
+	printf("Where OPTIONS can be one of the following:\n");
+	printf("-h Print this screen\n");
+	printf("-d Draw the damage retangles\n");
+	printf("-w The width of the window\n");
+	printf("-e The height of the window\n");
+	printf("-n The evas engine to use (list to list them all)\n");
+	printf("And FILE can be a SVG file or a directory\n");
+}
+
+static void _cb_delete(Ecore_Evas *ee EINA_UNUSED)
+{
+	ecore_main_loop_quit();
+}
+
+static void _cb_resize(Ecore_Evas *ee)
+{
+	Evas *evas;
+	Evas_Object *o;
+	int width;
+	int height;
+
+	ecore_evas_geometry_get(ee, NULL, NULL, &width, &height);
+	evas = ecore_evas_get(ee);
+	/* resize the svg object */
+	o = evas_object_name_find(evas, "svg");
+	evas_object_resize(o, width, height);
+	/* TODO put the controls on the same position */
+}
+
+int main(int argc, char *argv[])
+{
+	Trantor thiz;
+	Ecore_Evas *ee;
+	Evas *evas;
+	Evas_Object *o;
+	Eina_Bool damages;
+	char *short_options = "dhw:e:n:f:";
+	struct option long_options[] = {
+		{ "help", 1, 0, 'h' },
+		{ "damages", 0, 0, 'd' },
+		{ "fps", 1, 0, 'f' },
+		{ "width", 1, 0, 'w' },
+		{ "height", 1, 0, 'e' },
+		{ "engine", 1, 0, 'n' },
+	};
+	int option;
+	int ret;
+	const char *filename;
+	char *engine;
+	int width;
+	int height;
+	int fps;
+	struct stat st;
+
+	/* default options */
+	width = 640;
+	height = 480;
+	fps = 30;
+	damages = EINA_FALSE;
+#ifdef _WIN32
+	engine = "software_gdi";
+#else
+	engine = "software_x11";
+#endif
+
+	if (!ecore_evas_init())
+		return -1;
+
+	if (!efl_svg_init())
+		goto shutdown_ecore_evas;
+
+	while ((ret = getopt_long(argc, argv, short_options, long_options,
+			&option)) != -1)
+	{
+		switch (ret)
+		{
+			case 'h':
+			help(argv[0]);
+			return 0;
+
+			case 'd':
+			damages = EINA_TRUE;
+			break;
+
+			case 'f':
+			fps = atoi(optarg);
+			break;
+
+			case 'w':
+			width = atoi(optarg);
+			break;
+
+			case 'e':
+			height = atoi(optarg);
+			break;
+
+			case 'n':
+			if (!strcmp(optarg, "list"))
+			{
+				Eina_List *engines;
+				Eina_List *l;
+				const char *e;
+
+				engines = ecore_evas_engines_get();
+				EINA_LIST_FOREACH (engines, l, e)
+				{
+					printf("%s\n", e);
+				}
+				return 0;
+			}
+			else
+				engine = optarg;
+			break;
+
+			default:
+			break;
+		}
+	}
+
+	if (argc - 1 != optind)
+	{
+		help(argv[0]);
+		return 0;
+	}
+
+	filename = argv[optind];
+	if (stat(filename, &st) < 0)
+	{
+		help(argv[0]);
+		return 0;
+	}
+
+	thiz.width = width;
+	thiz.height = height;
+
+	ee = ecore_evas_new(engine, 0, 0, 0, 0, NULL);
+	if (!ee)
+		goto shutdown_esvg;
+
+	evas = ecore_evas_get(ee);
+	if (!evas)
+		goto free_ecore_evas;
+	ecore_evas_callback_delete_request_set(ee, _cb_delete);
+	ecore_evas_callback_resize_set(ee, _cb_resize);
+
+	/* create the main svg object */
+	o = efl_svg_new(evas);
+	efl_svg_file_set(o, filename);
+	efl_svg_debug_damage_set(o, damages);
+	efl_svg_fps_set(o, fps);
+	evas_object_move(o, 0, 0);
+	evas_object_resize(o, width, height);
+	evas_object_show(o);
+	evas_object_name_set(o, "svg");
+	thiz.svg = o;
+
+	ecore_evas_resize(ee, width, height);
+	ecore_evas_show(ee);
+
+	ecore_main_loop_begin();
+
+	ecore_evas_shutdown();
+	efl_svg_shutdown();
+
+	return 0;
+
+free_ecore_evas:
+	ecore_evas_free(ee);
+shutdown_esvg:
+	efl_svg_shutdown();
+shutdown_ecore_evas:
+	ecore_evas_shutdown();
+
+	return -1;
+}
