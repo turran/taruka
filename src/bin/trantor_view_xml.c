@@ -105,6 +105,30 @@ done:
 }
 #endif
 
+static void _element_name_over_cb(Egueb_Dom_Event *e, void *data)
+{
+	Egueb_Dom_Node *target = NULL;
+	Egueb_Svg_Color color;
+
+	egueb_dom_event_target_get(e, &target);
+	printf("over text %p\n", target);
+	egueb_svg_color_components_from(&color, 0xff, 0x00, 0x00);
+	egueb_svg_element_color_set(target, &color);
+	egueb_dom_node_unref(target);
+}
+
+static void _element_name_out_cb(Egueb_Dom_Event *e, void *data)
+{
+	Egueb_Dom_Node *target = NULL;
+	Egueb_Svg_Color color;
+
+	egueb_dom_event_target_get(e, &target);
+	printf("out text %p\n", target);
+	egueb_svg_color_components_from(&color, 0xff, 0xff, 0xff);
+	egueb_svg_element_color_set(target, &color);
+	egueb_dom_node_unref(target);
+}
+
 static void _tag_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Eina_Bool open)
 {
 	Egueb_Dom_Node *text;
@@ -129,10 +153,22 @@ static void _tag_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Eina_Bool ope
 	if (open)
 	{
 		Egueb_Dom_Node *child = NULL;
+		Egueb_Svg_Color color;
 
 		egueb_dom_character_data_append_data_inline(tnode, "<");
 		egueb_dom_character_data_append_data(tnode, name);
 		egueb_dom_node_child_append(text, tnode);
+
+		/* set the default fill paint to current color and the color to black */
+		egueb_svg_color_components_from(&color, 0, 0, 0);
+		egueb_svg_element_color_set(text, &color);
+		egueb_svg_element_fill_set(text, &EGUEB_SVG_PAINT_CURRENT_COLOR);
+		/* add the needed callbacks */
+		egueb_dom_node_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OVER,
+				_element_name_over_cb, EINA_TRUE, NULL);
+		egueb_dom_node_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OUT,
+				_element_name_out_cb, EINA_TRUE, NULL);
+
 		egueb_dom_node_child_append(thiz->svg, text);
 		/* now the attributes */
 		/* now the children */
