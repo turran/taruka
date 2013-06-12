@@ -5,10 +5,9 @@
 typedef struct _Trantor
 {
 	char *location;
+	Evas_Object *drawing_area;
 	Evas_Object *svg;
 	Evas_Object *xml;
-	int width;
-	int height;
 } Trantor;
 
 static void help(const char *name)
@@ -161,8 +160,6 @@ int main(int argc, char *argv[])
 		goto free_ecore_evas;
 
 	thiz = calloc(1, sizeof(Trantor));
-	thiz->width = width;
-	thiz->height = height;
 	evas_data_attach_set(evas, thiz);
 
 	ecore_evas_callback_delete_request_set(ee, _cb_delete);
