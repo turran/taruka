@@ -124,7 +124,7 @@ static void _element_name_out_cb(Egueb_Dom_Event *e, void *data)
 
 	egueb_dom_event_target_get(e, &target);
 	printf("out text %p\n", target);
-	egueb_svg_color_components_from(&color, 0xff, 0xff, 0xff);
+	egueb_svg_color_components_from(&color, 0x00, 0x00, 0x00);
 	egueb_svg_element_color_set(target, &color);
 	egueb_dom_node_unref(target);
 }
