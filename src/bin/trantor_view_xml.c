@@ -15,7 +15,6 @@ static void _element_name_over_cb(Egueb_Dom_Event *e, void *data)
 	Egueb_Svg_Color color;
 
 	egueb_dom_event_target_get(e, &target);
-	printf("over text %p\n", target);
 	egueb_svg_color_components_from(&color, 0xff, 0x00, 0x00);
 	egueb_svg_element_color_set(target, &color);
 	egueb_dom_node_unref(target);
@@ -27,23 +26,25 @@ static void _element_name_out_cb(Egueb_Dom_Event *e, void *data)
 	Egueb_Svg_Color color;
 
 	egueb_dom_event_target_get(e, &target);
-	printf("out text %p\n", target);
 	egueb_svg_color_components_from(&color, 0x00, 0x00, 0x00);
 	egueb_svg_element_color_set(target, &color);
 	egueb_dom_node_unref(target);
 }
 
 /* FIXME we should enable this once we have the <tspan> implemented */
-static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n)
+static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Egueb_Dom_Node *parent)
 {
-#if 0
 	Egueb_Dom_Node_Map_Named *attrs = NULL;
 	int count;
 	int i;
 
+	/* FIXME we moved the append here, because the node inserted is not propagating
+	 * the event for the children nodes of the inserted node
+	 */
+	egueb_dom_node_child_append(thiz->svg, parent);
+
 	egueb_dom_node_attributes_get(n, &attrs);
 	if (!attrs) return;
-
 
 	count = egueb_dom_node_map_named_length(attrs);
 	for (i = 0; i < count; i++)
@@ -51,9 +52,8 @@ static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n)
 		Egueb_Dom_Node *attr = NULL;
 		Egueb_Dom_String *attr_name;
 		Egueb_Dom_String *attr_value = NULL;
-		Egueb_Dom_Node *text;
+		Egueb_Dom_Node *tspan;
 		Egueb_Dom_Node *tnode;
-		Egueb_Svg_Length x, y;
 		Egueb_Svg_Font_Size font_size;
 
 		egueb_dom_node_map_named_at(attrs, i, &attr);
@@ -70,15 +70,14 @@ static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n)
 			goto no_name;
 		}
 
-		text = egueb_svg_element_text_new();
+		tnode = egueb_dom_text_new();
+		egueb_dom_character_data_append_data_inline(tnode, " ");
+		egueb_dom_node_child_append(parent, tnode);
+
+		tspan = egueb_svg_element_tspan_new();
 		font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
 		egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_UNIT_LENGTH_PX);
-		egueb_svg_element_font_size_set(text, &font_size);
-
-		egueb_svg_length_set(&y, 12 * thiz->level, EGUEB_SVG_UNIT_LENGTH_PX);
-		egueb_svg_element_text_y_set(text, &y);
-		egueb_svg_length_set(&x, 12 * thiz->tab, EGUEB_SVG_UNIT_LENGTH_PX);
-		egueb_svg_element_text_x_set(text, &x);
+		egueb_svg_element_font_size_set(tspan, &font_size);
 
 		tnode = egueb_dom_text_new();
 		egueb_dom_character_data_append_data(tnode, attr_name);
@@ -86,14 +85,13 @@ static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n)
 		egueb_dom_character_data_append_data(tnode, attr_value);
 		egueb_dom_character_data_append_data_inline(tnode, "\"");
 
-		egueb_dom_node_child_append(text, tnode);
-		egueb_dom_node_child_append(thiz->svg, text);
+		egueb_dom_node_child_append(tspan, tnode);
+		egueb_dom_node_child_append(parent, tspan);
 no_name:
 		egueb_dom_node_unref(attr);
 	}
 
 	egueb_dom_node_map_named_free(attrs);
-#endif
 }
 
 static void _tag_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Eina_Bool open)
@@ -136,16 +134,20 @@ static void _tag_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Eina_Bool ope
 		egueb_dom_node_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OUT,
 				_element_name_out_cb, EINA_TRUE, NULL);
 
-		egueb_dom_node_child_append(thiz->svg, text);
-
 		/* now the attributes */
-		_attrs_create(thiz, n);
+		_attrs_create(thiz, n, text);
+		//egueb_dom_node_child_append(thiz->svg, text);
 		/* now the children */
 		egueb_dom_node_child_first_get(n, &child);
+
+		/* another node for closing the tag */
+		tnode = egueb_dom_text_new();
 		if (child)
 		{
 			thiz->tab++;
 			egueb_dom_character_data_append_data_inline(tnode, ">");
+			egueb_dom_node_child_append(text, tnode);
+
 			do
 			{
 				Egueb_Dom_Node *next = NULL;
@@ -164,6 +166,7 @@ static void _tag_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Eina_Bool ope
 		else
 		{
 			egueb_dom_character_data_append_data_inline(tnode, "/>");
+			egueb_dom_node_child_append(text, tnode);
 		}
 	}
 	else
