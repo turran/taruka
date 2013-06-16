@@ -63,7 +63,7 @@ static void _attrs_create(Trantor_View_Xml *thiz, Egueb_Dom_Node *n, Egueb_Dom_N
 		egueb_dom_attr_name_get(attr, &attr_name);
 		if (!attr_name) goto no_name;
 
-		egueb_dom_attr_string_get(attr, &attr_value);
+		egueb_dom_attr_string_get(attr, EGUEB_DOM_ATTR_TYPE_BASE, &attr_value);
 		if (!attr_value)
 		{
 			egueb_dom_string_unref(attr_name);
