@@ -2,14 +2,6 @@
 #include <stdio.h>
 #include <getopt.h>
 
-typedef struct _Trantor
-{
-	char *location;
-	Evas_Object *drawing_area;
-	Evas_Object *svg;
-	Evas_Object *xml;
-} Trantor;
-
 static void help(const char *name)
 {
 	printf("Usage: %s [OPTIONS] FILE\n", name);
@@ -49,7 +41,6 @@ static void _cb_resize(Ecore_Evas *ee)
 int main(int argc, char *argv[])
 {
 	Trantor *thiz;
-	Egueb_Dom_Node *svg_doc;
 	Egueb_Dom_Node *xml_doc;
 	Ecore_Evas *ee;
 	Evas *evas;
@@ -174,18 +165,18 @@ int main(int argc, char *argv[])
 	evas_object_resize(o, width/2, height);
 	evas_object_show(o);
 	evas_object_name_set(o, "svg");
-	thiz->svg = o;
+	thiz->doc_svg = efl_svg_document_get(o);
+	thiz->o_svg = o;
 
 	/* create the xml object */
 	o = efl_svg_new(evas);
 	xml_doc = efl_svg_document_get(o);
-	svg_doc = efl_svg_document_get(thiz->svg);
-	trantor_view_xml_new(xml_doc, svg_doc);
+	trantor_view_xml_new(thiz, xml_doc);
 	evas_object_move(o, width/2, 0);
 	evas_object_resize(o, width/2, height);
 	evas_object_show(o);
 	evas_object_name_set(o, "xml");
-	thiz->xml = o;
+	thiz->o_xml = o;
 
 	ecore_evas_resize(ee, width, height);
 	ecore_evas_show(ee);
@@ -195,6 +186,7 @@ int main(int argc, char *argv[])
 	ecore_evas_shutdown();
 	efl_svg_shutdown();
 
+	egueb_dom_node_unref(thiz->doc_svg);
 	free(thiz);
 
 	return 0;
@@ -207,4 +199,42 @@ shutdown_ecore_evas:
 	ecore_evas_shutdown();
 
 	return -1;
+}
+
+Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
+{
+	Egueb_Dom_Node *ret;
+
+	egueb_dom_document_element_get(thiz->doc_svg, &ret);
+	return ret;
+}
+
+void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
+{
+	Eina_Rectangle bounds;
+
+#if 0
+	Egueb_Dom_Node *topmost;
+	/* check that the element topmost element is the same as the main one */
+	egueb_dom_document_element_get(thiz->doc_svg, &topmost);
+#endif
+	/* get the bounds and add a rectangle object with such bounds
+	 * on the drawing area
+	 */
+	if (!egueb_svg_is_renderable(n))
+		return;
+
+	egueb_svg_renderable_user_bounds_get(n, &bounds);
+	printf("bounds %" EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&bounds));
+}
+
+void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
+{
+	Eina_Rectangle bounds;
+
+	if (!egueb_svg_is_renderable(n))
+		return;
+
+	egueb_svg_renderable_user_bounds_get(n, &bounds);
+	printf("bounds %" EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&bounds));
 }

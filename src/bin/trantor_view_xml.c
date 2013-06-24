@@ -250,15 +250,15 @@ static Eina_Bool _generate_node(Egueb_Dom_Node *n, void *data)
 	return EINA_TRUE;
 }
 
-void trantor_view_xml_new(Egueb_Dom_Node *doc, Egueb_Dom_Node *other_doc)
+void trantor_view_xml_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 {
 	Trantor_View_Xml thiz;
 	Egueb_Dom_Node *other_svg, *svg;
 
 	svg = egueb_svg_element_svg_new();
+	other_svg = trantor_svg_get(t);
 
-	egueb_dom_document_element_set(doc, egueb_dom_node_ref(svg));
-	egueb_dom_document_element_get(other_doc, &other_svg);
+	egueb_dom_document_element_set(xml_doc, egueb_dom_node_ref(svg));
 
 	thiz.svg = svg;
 	thiz.level = 1;
@@ -267,6 +267,5 @@ void trantor_view_xml_new(Egueb_Dom_Node *doc, Egueb_Dom_Node *other_doc)
 
 	egueb_dom_node_unref(svg);
 	egueb_dom_node_unref(other_svg);
-	egueb_dom_node_unref(doc);
-	egueb_dom_node_unref(other_doc);
+	egueb_dom_node_unref(xml_doc);
 }
