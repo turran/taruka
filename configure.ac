@@ -58,6 +58,8 @@ PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
 
 ### Checks for compiler characteristics
 
+AM_PROG_CC_C_O
+
 EFL_CHECK_COMPILER_FLAGS([TRANTOR], [-Wall -Wextra -Wshadow])
 
 
@@ -67,8 +69,6 @@ EFL_CHECK_COMPILER_FLAGS([TRANTOR], [-Wall -Wextra -Wshadow])
 
 AC_CONFIG_FILES([
 Makefile
-src/Makefile
-src/bin/Makefile
 ])
 
 AC_OUTPUT
