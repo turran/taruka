@@ -225,7 +225,7 @@ void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 		return;
 
 	egueb_svg_renderable_user_bounds_get(n, &bounds);
-	printf("bounds %" EINA_RECTANGLE_FORMAT "\n", EINA_RECTANGLE_ARGS(&bounds));
+	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 }
 
 void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
@@ -236,5 +236,5 @@ void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 		return;
 
 	egueb_svg_renderable_user_bounds_get(n, &bounds);
-	printf("bounds %" EINA_RECTANGLE_FORMAT "\n", EINA_RECTANGLE_ARGS(&bounds));
+	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 }

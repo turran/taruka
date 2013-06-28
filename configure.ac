@@ -17,17 +17,13 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.6 dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-LT_PREREQ([2.2])
-LT_INIT([win32-dll])
-
-version_info="lt_cur:lt_rev:lt_age"
-AC_SUBST([version_info])
-VMAJ=v_maj
-AC_SUBST([VMAJ])
-
 ### Needed information
 
 AC_CANONICAL_HOST
+
+requirements_trantor=""
+
+efl_version="1.7.0"
 
 ### Additional options to configure
 
@@ -41,7 +37,13 @@ PKG_PROG_PKG_CONFIG
 
 ### Checks for libraries
 
-requirements_trantor="egueb-dom >= 0.0.21 egueb-svg >= 0.0.21 ender >= 0.0.6 enesim >= 0.0.15 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0 efl_svg"
+case "$host_os" in
+   mingw*)
+      requirements_trantor="${requirements_trantor} evil >= ${efl_version}"
+   ;;
+esac
+
+requirements_trantor="egueb-dom >= 0.0.21 egueb-svg >= 0.0.21 enesim >= 0.0.15 eina-extra  >= 0.0.1 efl_svg ecore-evas >= ${efl_version} ecore >= ${efl_version} evas >= ${efl_version} eina >= ${efl_version} ${requirements_trantor}"
 AC_SUBST([requirements_trantor])
 PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
 

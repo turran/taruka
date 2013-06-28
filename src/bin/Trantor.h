@@ -3,6 +3,7 @@
 
 #include <Ecore.h>
 #include <Ecore_Evas.h>
+#include <Eina_Extra.h>
 #include <Egueb_Svg.h>
 #include <Efl_Svg_Smart.h>
 
