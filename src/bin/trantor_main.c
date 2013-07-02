@@ -33,9 +33,24 @@ static void _cb_resize(Ecore_Evas *ee)
 	o = evas_object_name_find(evas, "svg");
 	evas_object_resize(o, width/2, height);
 
+	o = evas_object_name_find(evas, "drawing");
+	evas_object_resize(o, width/2, height);
+
 	o = evas_object_name_find(evas, "xml");
 	evas_object_move(o, width/2, 0);
 	evas_object_resize(o, width/2, height);
+}
+
+static void _trantor_init(void)
+{
+	TRANTOR_EVENT_ELEMENT_SELECTED = egueb_dom_string_new_with_string("TrantorElementSelected");
+	TRANTOR_EVENT_ELEMENT_UNSELECTED = egueb_dom_string_new_with_string("TrantorElementUnselected");
+}
+
+static void _trantor_shutdown(void)
+{
+	egueb_dom_string_unref(TRANTOR_EVENT_ELEMENT_SELECTED);
+	egueb_dom_string_unref(TRANTOR_EVENT_ELEMENT_UNSELECTED);
 }
 
 int main(int argc, char *argv[])
@@ -150,6 +165,7 @@ int main(int argc, char *argv[])
 	if (!evas)
 		goto free_ecore_evas;
 
+	_trantor_init();
 	thiz = calloc(1, sizeof(Trantor));
 	evas_data_attach_set(evas, thiz);
 
@@ -167,6 +183,17 @@ int main(int argc, char *argv[])
 	evas_object_name_set(o, "svg");
 	thiz->doc_svg = efl_svg_document_get(o);
 	thiz->o_svg = o;
+
+	/* create the drawing area */
+	o = efl_svg_new(evas);
+	xml_doc = efl_svg_document_get(o);
+	trantor_view_drawing_new(thiz, xml_doc);
+	evas_object_move(o, 0, 0);
+	evas_object_resize(o, width/2, height);
+	evas_object_show(o);
+	evas_object_name_set(o, "drawing");
+	evas_object_color_set(o, 0, 0, 0, 0);
+	thiz->o_drawing = o;
 
 	/* create the xml object */
 	o = efl_svg_new(evas);
@@ -187,6 +214,7 @@ int main(int argc, char *argv[])
 	efl_svg_shutdown();
 
 	egueb_dom_node_unref(thiz->doc_svg);
+	_trantor_shutdown();
 	free(thiz);
 
 	return 0;
@@ -201,6 +229,9 @@ shutdown_ecore_evas:
 	return -1;
 }
 
+Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_SELECTED;
+Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_UNSELECTED;
+
 Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
 {
 	Egueb_Dom_Node *ret;
@@ -211,30 +242,25 @@ Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
 
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 {
-	Eina_Rectangle bounds;
-
+	Egueb_Dom_Event *ev;
 #if 0
 	Egueb_Dom_Node *topmost;
 	/* check that the element topmost element is the same as the main one */
 	egueb_dom_document_element_get(thiz->doc_svg, &topmost);
-#endif
 	/* get the bounds and add a rectangle object with such bounds
 	 * on the drawing area
 	 */
-	if (!egueb_svg_is_renderable(n))
-		return;
-
-	egueb_svg_renderable_user_bounds_get(n, &bounds);
-	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
+#endif
+	ev = egueb_dom_event_external_new(TRANTOR_EVENT_ELEMENT_SELECTED,
+			EINA_TRUE, EINA_FALSE, NULL, NULL);
+	egueb_dom_node_event_dispatch(n, ev, NULL);
 }
 
 void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 {
-	Eina_Rectangle bounds;
-
-	if (!egueb_svg_is_renderable(n))
-		return;
-
-	egueb_svg_renderable_user_bounds_get(n, &bounds);
-	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
+	Egueb_Dom_Event *ev;
+	ev = egueb_dom_event_external_new(TRANTOR_EVENT_ELEMENT_UNSELECTED,
+			EINA_TRUE, EINA_FALSE, NULL, NULL);
+	egueb_dom_node_event_dispatch(n, ev, NULL);
 }
+

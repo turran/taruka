@@ -12,13 +12,21 @@ typedef struct _Trantor
 	char *location;
 	Egueb_Dom_Node *doc_svg;
 	Evas_Object *o_drawing_area;
+	/* FIXME once this is split into lib
+	 * remove all objects. The Efl viewer
+	 * should just have a single evas object
+	 */
 	Evas_Object *o_svg;
 	Evas_Object *o_xml;
+	Evas_Object *o_drawing;
 } Trantor;
 
 void trantor_view_xml_new(Trantor *thiz, Egueb_Dom_Node *xml_doc);
 Egueb_Dom_Node * trantor_svg_get(Trantor *thiz);
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n);
 void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n);
+
+extern Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_SELECTED;
+extern Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_UNSELECTED;
 
 #endif
