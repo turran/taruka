@@ -70,7 +70,7 @@ void trantor_view_drawing_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 	egueb_svg_element_color_set(bounds, &color);
 	egueb_svg_element_stroke_set(bounds, &EGUEB_SVG_PAINT_CURRENT_COLOR);
 	egueb_svg_element_fill_set(bounds, &EGUEB_SVG_PAINT_NONE);
-	egueb_svg_length_set(&width, 2, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&width, 3, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_stroke_width_set(bounds, &width);
 
 	egueb_dom_node_child_append(svg, bounds);
