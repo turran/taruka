@@ -181,8 +181,17 @@ int main(int argc, char *argv[])
 	evas_object_resize(o, width/2, height);
 	evas_object_show(o);
 	evas_object_name_set(o, "svg");
+	//evas_object_color_set(o, 255, 255, 0, 255);
 	thiz->doc_svg = efl_svg_document_get(o);
 	thiz->o_svg = o;
+
+	/* parse the file */
+#if 0
+	thiz->doc_svg = egueb_svg_document_new(NULL);
+	im = enesim_image_data_file_new(filename, "r+");
+	egueb_dom_parser_parse(im, thiz->doc_svg);
+	egueb_dom_document_element_get(thiz->doc_svg, &n);
+#endif
 
 	/* create the drawing area */
 	o = efl_svg_new(evas);
@@ -192,7 +201,11 @@ int main(int argc, char *argv[])
 	evas_object_resize(o, width/2, height);
 	evas_object_show(o);
 	evas_object_name_set(o, "drawing");
-	evas_object_color_set(o, 0, 0, 0, 0);
+	/* FIXME if we pass a full transparent color and thus a full
+	 * transparent background rectangle, the image is not drawn
+	 * correctly
+	 */
+	evas_object_color_set(o, 5, 5, 5, 5);
 	thiz->o_drawing = o;
 
 	/* create the xml object */

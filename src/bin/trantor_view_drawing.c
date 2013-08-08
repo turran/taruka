@@ -5,6 +5,7 @@ typedef struct _Trantor_View_Drawing
 	Trantor *t;
 	Egueb_Dom_Node *svg;
 	Egueb_Dom_Node *bounds;
+	Egueb_Dom_Node *other_doc;
 } Trantor_View_Drawing;
 
 static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
@@ -12,19 +13,36 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 {
 	Trantor_View_Drawing *thiz = data;
 	Egueb_Dom_Node *target;
+	Egueb_Dom_Node *doc;
 	Egueb_Svg_Length length;
 	Eina_Rectangle bounds;
+	double aw, ah, oaw, oah;
+	double x = 0, y = 0;
 
 	egueb_dom_event_target_get(ev, &target);
 	if (!egueb_svg_is_renderable(target))
 		goto done;
 
+	egueb_dom_node_document_get(thiz->svg, &doc);
+	egueb_svg_document_actual_width_get(doc, &aw);
+	egueb_svg_document_actual_height_get(doc, &ah);
+	egueb_dom_node_unref(doc);
+
+	egueb_svg_document_actual_width_get(thiz->other_doc, &oaw);
+	egueb_svg_document_actual_height_get(thiz->other_doc, &oah);
+	printf("us %g %g other size %g %g\n", aw, ah, oaw, oah);
+
+	if (aw > oaw)
+		x = (aw - oaw) / 2;
+	if (ah > oah)
+		y = (ah - oah) / 2;
+
 	egueb_svg_renderable_user_bounds_get(target, &bounds);
 	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 
-	egueb_svg_length_set(&length, bounds.x, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.x + x, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_rect_x_set(thiz->bounds, &length);
-	egueb_svg_length_set(&length, bounds.y, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.y + y, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_rect_y_set(thiz->bounds, &length);
 	egueb_svg_length_set(&length, bounds.w, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_rect_width_set(thiz->bounds, &length);
@@ -70,7 +88,7 @@ void trantor_view_drawing_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 	egueb_svg_element_color_set(bounds, &color);
 	egueb_svg_element_stroke_set(bounds, &EGUEB_SVG_PAINT_CURRENT_COLOR);
 	egueb_svg_element_fill_set(bounds, &EGUEB_SVG_PAINT_NONE);
-	egueb_svg_length_set(&width, 3, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&width, 1, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_stroke_width_set(bounds, &width);
 
 	egueb_dom_node_child_append(svg, bounds);
@@ -79,6 +97,7 @@ void trantor_view_drawing_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 	thiz->t = t;
 	thiz->svg = svg;
 	thiz->bounds = bounds;
+	egueb_dom_node_document_get(other_svg, &thiz->other_doc);
 
 	/* register the selected/unselected event */
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
