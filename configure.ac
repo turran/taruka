@@ -24,6 +24,9 @@ AC_CANONICAL_HOST
 requirements_trantor=""
 
 efl_version="1.7.0"
+efl_egueb_version="0.0.1"
+egueb_version="0.0.23"
+eon_version="0.0.15"
 
 ### Additional options to configure
 
@@ -43,7 +46,7 @@ case "$host_os" in
    ;;
 esac
 
-requirements_trantor="egueb-dom >= 0.0.21 egueb-svg >= 0.0.21 enesim >= 0.0.15 eina-extra  >= 0.0.1 efl_svg ecore-evas >= ${efl_version} ecore >= ${efl_version} evas >= ${efl_version} eina >= ${efl_version} ${requirements_trantor}"
+requirements_trantor="eon >= ${eon_version} efl-egueb >= ${efl_egueb_version} egueb-dom >= ${egueb_version} egueb-svg >= ${egueb_version} ecore >= ${efl_version} ${requirements_trantor}"
 AC_SUBST([requirements_trantor])
 PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
 

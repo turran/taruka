@@ -1,16 +1,18 @@
 #ifndef _TRANTOR_H_
 #define _TRANTOR_H_
 
+#include <Efl_Egueb.h>
 #include <Ecore.h>
-#include <Ecore_Evas.h>
-#include <Eina_Extra.h>
 #include <Egueb_Svg.h>
-#include <Efl_Svg_Smart.h>
+#include <Eon.h>
 
 typedef struct _Trantor
 {
-	char *location;
+	Efl_Egueb_Window *window;
+	Egueb_Dom_Node *doc;
 	Egueb_Dom_Node *doc_svg;
+
+	char *location;
 	Evas_Object *o_drawing_area;
 	/* FIXME once this is split into lib
 	 * remove all objects. The Efl viewer

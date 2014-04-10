@@ -10,35 +10,7 @@ static void help(const char *name)
 	printf("-d Draw the damage retangles\n");
 	printf("-w The width of the window\n");
 	printf("-e The height of the window\n");
-	printf("-n The evas engine to use (list to list them all)\n");
 	printf("And FILE can be a SVG file or a directory\n");
-}
-
-static void _cb_delete(Ecore_Evas *ee EINA_UNUSED)
-{
-	ecore_main_loop_quit();
-}
-
-static void _cb_resize(Ecore_Evas *ee)
-{
-	Evas *evas;
-	Evas_Object *o;
-	int width;
-	int height;
-
-	ecore_evas_geometry_get(ee, NULL, NULL, &width, &height);
-	evas = ecore_evas_get(ee);
-
-	/* resize the svg objects */
-	o = evas_object_name_find(evas, "svg");
-	evas_object_resize(o, width/2, height);
-
-	o = evas_object_name_find(evas, "drawing");
-	evas_object_resize(o, width/2, height);
-
-	o = evas_object_name_find(evas, "xml");
-	evas_object_move(o, width/2, 0);
-	evas_object_resize(o, width/2, height);
 }
 
 static void _trantor_init(void)
@@ -56,24 +28,20 @@ static void _trantor_shutdown(void)
 int main(int argc, char *argv[])
 {
 	Trantor *thiz;
-	Egueb_Dom_Node *xml_doc;
-	Ecore_Evas *ee;
-	Evas *evas;
-	Evas_Object *o;
+	Efl_Egueb_Window *window;
+	Egueb_Dom_Node *doc;
 	Eina_Bool damages;
-	char *short_options = "dhw:e:n:f:";
+	char *short_options = "dhw:e:f:";
 	struct option long_options[] = {
 		{ "help", 1, 0, 'h' },
 		{ "damages", 0, 0, 'd' },
 		{ "fps", 1, 0, 'f' },
 		{ "width", 1, 0, 'w' },
 		{ "height", 1, 0, 'e' },
-		{ "engine", 1, 0, 'n' },
 	};
 	int option;
 	int ret;
 	const char *filename;
-	char *engine;
 	int width;
 	int height;
 	int fps;
@@ -84,17 +52,9 @@ int main(int argc, char *argv[])
 	height = 480;
 	fps = 30;
 	damages = EINA_FALSE;
-#ifdef _WIN32
-	engine = "software_gdi";
-#else
-	engine = "software_x11";
-#endif
 
-	if (!ecore_evas_init())
+	if (!efl_egueb_init())
 		return -1;
-
-	if (!efl_svg_init())
-		goto shutdown_ecore_evas;
 
 	while ((ret = getopt_long(argc, argv, short_options, long_options,
 			&option)) != -1)
@@ -121,24 +81,6 @@ int main(int argc, char *argv[])
 			height = atoi(optarg);
 			break;
 
-			case 'n':
-			if (!strcmp(optarg, "list"))
-			{
-				Eina_List *engines;
-				Eina_List *l;
-				const char *e;
-
-				engines = ecore_evas_engines_get();
-				EINA_LIST_FOREACH (engines, l, e)
-				{
-					printf("%s\n", e);
-				}
-				return 0;
-			}
-			else
-				engine = optarg;
-			break;
-
 			default:
 			break;
 		}
@@ -157,42 +99,17 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	ee = ecore_evas_new(engine, 0, 0, 0, 0, NULL);
-	if (!ee)
-		goto shutdown_esvg;
 
-	evas = ecore_evas_get(ee);
-	if (!evas)
-		goto free_ecore_evas;
+	doc = eon_document_new();
+	window = efl_egueb_window_auto_new(egueb_dom_node_ref(doc), 0, 0, width,
+			height);
 
 	_trantor_init();
 	thiz = calloc(1, sizeof(Trantor));
-	evas_data_attach_set(evas, thiz);
+	thiz->doc = doc;
+	thiz->window = window;
 
-	ecore_evas_callback_delete_request_set(ee, _cb_delete);
-	ecore_evas_callback_resize_set(ee, _cb_resize);
-
-	/* create the main svg object */
-	o = efl_svg_new(evas);
-	efl_svg_file_set(o, filename);
-	efl_svg_debug_damage_set(o, damages);
-	efl_svg_fps_set(o, fps);
-	evas_object_move(o, 0, 0);
-	evas_object_resize(o, width/2, height);
-	evas_object_show(o);
-	evas_object_name_set(o, "svg");
-	//evas_object_color_set(o, 255, 255, 0, 255);
-	thiz->doc_svg = efl_svg_document_get(o);
-	thiz->o_svg = o;
-
-	/* parse the file */
 #if 0
-	thiz->doc_svg = egueb_svg_document_new(NULL);
-	im = enesim_image_data_file_new(filename, "r+");
-	egueb_dom_parser_parse(im, thiz->doc_svg);
-	egueb_dom_document_element_get(thiz->doc_svg, &n);
-#endif
-
 	/* create the drawing area */
 	o = efl_svg_new(evas);
 	xml_doc = efl_svg_document_get(o);
@@ -220,26 +137,17 @@ int main(int argc, char *argv[])
 
 	ecore_evas_resize(ee, width, height);
 	ecore_evas_show(ee);
-
+#endif
 	ecore_main_loop_begin();
 
-	ecore_evas_shutdown();
-	efl_svg_shutdown();
-
-	egueb_dom_node_unref(thiz->doc_svg);
+	egueb_dom_node_unref(thiz->doc);
+	efl_egueb_window_free(thiz->window);
 	_trantor_shutdown();
 	free(thiz);
 
+	efl_egueb_shutdown();
+
 	return 0;
-
-free_ecore_evas:
-	ecore_evas_free(ee);
-shutdown_esvg:
-	efl_svg_shutdown();
-shutdown_ecore_evas:
-	ecore_evas_shutdown();
-
-	return -1;
 }
 
 Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_SELECTED;
@@ -247,12 +155,10 @@ Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_UNSELECTED;
 
 Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
 {
-	Egueb_Dom_Node *ret;
-
-	egueb_dom_document_element_get(thiz->doc_svg, &ret);
-	return ret;
+	return egueb_dom_document_element_get(thiz->doc_svg);
 }
 
+#if 0
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 {
 	Egueb_Dom_Event *ev;
@@ -276,4 +182,4 @@ void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 			EINA_TRUE, EINA_FALSE, NULL, NULL);
 	egueb_dom_node_event_dispatch(n, ev, NULL);
 }
-
+#endif
