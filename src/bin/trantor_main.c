@@ -158,7 +158,6 @@ Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
 	return egueb_dom_document_element_get(thiz->doc_svg);
 }
 
-#if 0
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 {
 	Egueb_Dom_Event *ev;
@@ -170,16 +169,19 @@ void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 	 * on the drawing area
 	 */
 #endif
+#if 0
 	ev = egueb_dom_event_external_new(TRANTOR_EVENT_ELEMENT_SELECTED,
 			EINA_TRUE, EINA_FALSE, NULL, NULL);
 	egueb_dom_node_event_dispatch(n, ev, NULL);
+#endif
 }
 
 void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 {
+#if 0
 	Egueb_Dom_Event *ev;
 	ev = egueb_dom_event_external_new(TRANTOR_EVENT_ELEMENT_UNSELECTED,
 			EINA_TRUE, EINA_FALSE, NULL, NULL);
 	egueb_dom_node_event_dispatch(n, ev, NULL);
-}
 #endif
+}

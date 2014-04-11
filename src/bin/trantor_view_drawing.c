@@ -16,7 +16,7 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 	Egueb_Dom_Node *doc;
 	Egueb_Svg_Length length;
 	Eina_Rectangle bounds;
-	double aw, ah, oaw, oah;
+	double aw = 0, ah = 0, oaw = 0, oah = 0;
 	double x = 0, y = 0;
 
 	target = egueb_dom_event_target_get(ev);
@@ -24,12 +24,16 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 		goto done;
 
 	doc = egueb_dom_node_document_get(thiz->svg);
+#if 0
 	egueb_svg_document_actual_width_get(doc, &aw);
 	egueb_svg_document_actual_height_get(doc, &ah);
+#endif
 	egueb_dom_node_unref(doc);
 
+#if 0
 	egueb_svg_document_actual_width_get(thiz->other_doc, &oaw);
 	egueb_svg_document_actual_height_get(thiz->other_doc, &oah);
+#endif
 	printf("us %g %g other size %g %g\n", aw, ah, oaw, oah);
 
 	if (aw > oaw)
