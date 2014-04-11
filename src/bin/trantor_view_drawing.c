@@ -19,11 +19,11 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 	double aw, ah, oaw, oah;
 	double x = 0, y = 0;
 
-	egueb_dom_event_target_get(ev, &target);
+	target = egueb_dom_event_target_get(ev);
 	if (!egueb_svg_is_renderable(target))
 		goto done;
 
-	egueb_dom_node_document_get(thiz->svg, &doc);
+	doc = egueb_dom_node_document_get(thiz->svg);
 	egueb_svg_document_actual_width_get(doc, &aw);
 	egueb_svg_document_actual_height_get(doc, &ah);
 	egueb_dom_node_unref(doc);
@@ -38,7 +38,7 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 		y = (ah - oah) / 2;
 
 	egueb_svg_renderable_user_bounds_get(target, &bounds);
-	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
+	//printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 
 	egueb_svg_length_set(&length, bounds.x + x, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_rect_x_set(thiz->bounds, &length);
@@ -59,13 +59,13 @@ static void _trantor_view_drawing_unselected_cb(Egueb_Dom_Event *ev,
 	Egueb_Dom_Node *target;
 	Eina_Rectangle bounds;
 
-	egueb_dom_event_target_get(ev, &target);
+	target = egueb_dom_event_target_get(ev);
 	if (!egueb_svg_is_renderable(target))
 		goto done;
 
 	thiz = data;
 	egueb_svg_renderable_user_bounds_get(target, &bounds);
-	printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
+	//printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 done:
 	egueb_dom_node_unref(target);
 }
@@ -91,13 +91,13 @@ void trantor_view_drawing_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 	egueb_svg_length_set(&width, 1, EGUEB_SVG_UNIT_LENGTH_PX);
 	egueb_svg_element_stroke_width_set(bounds, &width);
 
-	egueb_dom_node_child_append(svg, bounds);
+	egueb_dom_node_child_append(svg, bounds, NULL);
 
 	thiz = calloc(1, sizeof(Trantor_View_Drawing));
 	thiz->t = t;
 	thiz->svg = svg;
 	thiz->bounds = bounds;
-	egueb_dom_node_document_get(other_svg, &thiz->other_doc);
+	thiz->other_doc = egueb_dom_node_document_get(other_svg);
 
 	/* register the selected/unselected event */
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
