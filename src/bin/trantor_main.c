@@ -15,6 +15,7 @@ static void help(const char *name)
 
 static void _trantor_init(void)
 {
+	eon_init();
 	TRANTOR_EVENT_ELEMENT_SELECTED = egueb_dom_string_new_with_string("TrantorElementSelected");
 	TRANTOR_EVENT_ELEMENT_UNSELECTED = egueb_dom_string_new_with_string("TrantorElementUnselected");
 }
@@ -23,13 +24,76 @@ static void _trantor_shutdown(void)
 {
 	egueb_dom_string_unref(TRANTOR_EVENT_ELEMENT_SELECTED);
 	egueb_dom_string_unref(TRANTOR_EVENT_ELEMENT_UNSELECTED);
+	eon_shutdown();
+}
+
+static void _trantor_ui_setup(Trantor *thiz)
+{
+	Egueb_Dom_Node *p, *n;
+
+	/* setup one view */
+	n = trantor_view_drawing_new(thiz);
+	p = eon_element_stack_new();
+	egueb_dom_node_child_append(p, n, NULL);
+	n = p;
+
+	p = eon_element_eon_new();
+	egueb_dom_node_child_append(p, n, NULL);
+	n = p;
+
+	egueb_dom_node_child_append(thiz->doc, n, NULL);
+}
+
+static Trantor * _trantor_new(const char *filename, int width, int height)
+{
+	Trantor *thiz;
+	Enesim_Stream *s;
+
+	thiz = calloc(1, sizeof(Trantor));
+	s = enesim_stream_file_new(filename, "r");
+	if (!s)
+	{
+		free(thiz);
+		return NULL;
+	}
+
+	egueb_dom_parser_parse(s, &thiz->doc_svg);
+	enesim_stream_unref(s);
+	if (!thiz->doc_svg)
+	{
+		free(thiz);
+		return NULL;
+	}
+
+	/* create our own eon widgets */
+	thiz->doc = eon_document_new();
+	_trantor_ui_setup(thiz);
+
+	thiz->window = efl_egueb_window_auto_new(egueb_dom_node_ref(thiz->doc),
+			0, 0, width, height);
+
+	if (!thiz->window)
+	{
+		egueb_dom_node_unref(thiz->doc_svg);
+		egueb_dom_node_unref(thiz->doc);
+		free(thiz);
+		return NULL;
+	}
+
+	return thiz;
+}
+
+static void _trantor_free(Trantor *thiz)
+{
+	egueb_dom_node_unref(thiz->doc);
+	egueb_dom_node_unref(thiz->doc_svg);
+	efl_egueb_window_free(thiz->window);
+	free(thiz);
 }
 
 int main(int argc, char *argv[])
 {
 	Trantor *thiz;
-	Efl_Egueb_Window *window;
-	Egueb_Dom_Node *doc;
 	Eina_Bool damages;
 	char *short_options = "dhw:e:f:";
 	struct option long_options[] = {
@@ -45,7 +109,6 @@ int main(int argc, char *argv[])
 	int width;
 	int height;
 	int fps;
-	struct stat st;
 
 	/* default options */
 	width = 640;
@@ -93,57 +156,19 @@ int main(int argc, char *argv[])
 	}
 
 	filename = argv[optind];
-	if (stat(filename, &st) < 0)
+
+	_trantor_init();
+	thiz = _trantor_new(filename, width, height);
+	if (!thiz)
 	{
-		help(argv[0]);
+		_trantor_shutdown();
 		return 0;
 	}
 
-
-	doc = eon_document_new();
-	window = efl_egueb_window_auto_new(egueb_dom_node_ref(doc), 0, 0, width,
-			height);
-
-	_trantor_init();
-	thiz = calloc(1, sizeof(Trantor));
-	thiz->doc = doc;
-	thiz->window = window;
-
-#if 0
-	/* create the drawing area */
-	o = efl_svg_new(evas);
-	xml_doc = efl_svg_document_get(o);
-	trantor_view_drawing_new(thiz, xml_doc);
-	evas_object_move(o, 0, 0);
-	evas_object_resize(o, width/2, height);
-	evas_object_show(o);
-	evas_object_name_set(o, "drawing");
-	/* FIXME if we pass a full transparent color and thus a full
-	 * transparent background rectangle, the image is not drawn
-	 * correctly
-	 */
-	evas_object_color_set(o, 5, 5, 5, 5);
-	thiz->o_drawing = o;
-
-	/* create the xml object */
-	o = efl_svg_new(evas);
-	xml_doc = efl_svg_document_get(o);
-	trantor_view_xml_new(thiz, xml_doc);
-	evas_object_move(o, width/2, 0);
-	evas_object_resize(o, width/2, height);
-	evas_object_show(o);
-	evas_object_name_set(o, "xml");
-	thiz->o_xml = o;
-
-	ecore_evas_resize(ee, width, height);
-	ecore_evas_show(ee);
-#endif
 	ecore_main_loop_begin();
 
-	egueb_dom_node_unref(thiz->doc);
-	efl_egueb_window_free(thiz->window);
+	_trantor_free(thiz);
 	_trantor_shutdown();
-	free(thiz);
 
 	efl_egueb_shutdown();
 
@@ -184,4 +209,9 @@ void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 			EINA_TRUE, EINA_FALSE, NULL, NULL);
 	egueb_dom_node_event_dispatch(n, ev, NULL);
 #endif
+}
+
+Egueb_Dom_Node * trantor_document_get(Trantor *thiz)
+{
+	return egueb_dom_node_ref(thiz->doc_svg);
 }

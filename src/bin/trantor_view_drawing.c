@@ -3,9 +3,10 @@
 typedef struct _Trantor_View_Drawing
 {
 	Trantor *t;
+	Egueb_Dom_Node *doc;
 	Egueb_Dom_Node *svg;
+	Egueb_Dom_Node *preview_area;
 	Egueb_Dom_Node *bounds;
-	Egueb_Dom_Node *other_doc;
 } Trantor_View_Drawing;
 
 static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
@@ -74,45 +75,58 @@ done:
 	egueb_dom_node_unref(target);
 }
 
-void trantor_view_drawing_new(Trantor *t, Egueb_Dom_Node *xml_doc)
+Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 {
 	Trantor_View_Drawing *thiz;
-	Egueb_Dom_Node *other_svg, *svg;
-	Egueb_Dom_Node *bounds;
+	Egueb_Dom_Node *n;
+	Egueb_Dom_Node *other_svg;
 	Egueb_Svg_Color color;
-	Egueb_Svg_Length width;
-
-	svg = egueb_svg_element_svg_new();
-	other_svg = trantor_svg_get(t);
-
-	egueb_dom_document_element_set(xml_doc, egueb_dom_node_ref(svg));
-	/* our bounds rectangle */
-	bounds = egueb_svg_element_rect_new();
-	egueb_svg_color_components_from(&color, 0xff, 0x00, 0x00);
-	egueb_svg_element_color_set(bounds, &color);
-	egueb_svg_element_stroke_set(bounds, &EGUEB_SVG_PAINT_CURRENT_COLOR);
-	egueb_svg_element_fill_set(bounds, &EGUEB_SVG_PAINT_NONE);
-	egueb_svg_length_set(&width, 1, EGUEB_SVG_UNIT_LENGTH_PX);
-	egueb_svg_element_stroke_width_set(bounds, &width);
-
-	egueb_dom_node_child_append(svg, bounds, NULL);
+	Egueb_Svg_Length l;
 
 	thiz = calloc(1, sizeof(Trantor_View_Drawing));
 	thiz->t = t;
-	thiz->svg = svg;
-	thiz->bounds = bounds;
-	thiz->other_doc = egueb_dom_node_document_get(other_svg);
+	/* create a svg doc like:
+	 * <svg>
+	 *   <image id="previewArea"> <!-- the original document is embedded -->
+	 *   <rect id="page"/>
+	 *   <rect id="pageShadow"/>
+	 * </svg>
+	 */
+	thiz->doc = egueb_svg_document_new();
+
+	thiz->svg = egueb_svg_element_svg_new();
+	egueb_dom_node_child_append(thiz->doc, egueb_dom_node_ref(thiz->svg), NULL);
+
+	thiz->preview_area = egueb_svg_element_image_new();
+	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->preview_area), NULL);
+
+	n = egueb_svg_element_rect_new();
+	/* some helpful items */
+	/* our bounds rectangle */
+	thiz->bounds = egueb_svg_element_rect_new();
+	egueb_svg_color_components_from(&color, 0xff, 0x00, 0x00);
+	egueb_svg_element_color_set(thiz->bounds, &color);
+	egueb_svg_element_stroke_set(thiz->bounds, &EGUEB_SVG_PAINT_CURRENT_COLOR);
+	egueb_svg_element_fill_set(thiz->bounds, &EGUEB_SVG_PAINT_NONE);
+	egueb_svg_length_set(&l, 1, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_element_stroke_width_set(thiz->bounds, &l);
+	egueb_svg_length_set(&l, 99.9, EGUEB_SVG_UNIT_LENGTH_PERCENT);
+	egueb_svg_element_rect_width_set(thiz->bounds, &l);
+	egueb_svg_element_rect_height_set(thiz->bounds, &l);
+	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->bounds), NULL);
 
 	/* register the selected/unselected event */
+	other_svg = trantor_document_get(t);
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
 			_trantor_view_drawing_selected_cb,
 			EINA_FALSE, thiz);
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_UNSELECTED,
 			_trantor_view_drawing_unselected_cb,
 			EINA_FALSE, thiz);
-
-	egueb_dom_node_unref(svg);
 	egueb_dom_node_unref(other_svg);
-	egueb_dom_node_unref(xml_doc);
-}
 
+	/* our own widget */
+	n = eon_element_object_new();
+	eon_element_object_document_set(n, egueb_dom_node_ref(thiz->doc));
+	return n;
+}
