@@ -24,7 +24,7 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 	if (!egueb_svg_is_renderable(target))
 		goto done;
 
-	doc = egueb_dom_node_document_get(thiz->svg);
+	doc = egueb_dom_node_owner_document_get(thiz->svg);
 #if 0
 	egueb_svg_document_actual_width_get(doc, &aw);
 	egueb_svg_document_actual_height_get(doc, &ah);

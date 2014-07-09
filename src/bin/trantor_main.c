@@ -180,7 +180,7 @@ Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_UNSELECTED;
 
 Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
 {
-	return egueb_dom_document_element_get(thiz->doc_svg);
+	return egueb_dom_document_document_element_get(thiz->doc_svg);
 }
 
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
@@ -189,7 +189,7 @@ void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 #if 0
 	Egueb_Dom_Node *topmost;
 	/* check that the element topmost element is the same as the main one */
-	egueb_dom_document_element_get(thiz->doc_svg, &topmost);
+	egueb_dom_document_document_element_get(thiz->doc_svg, &topmost);
 	/* get the bounds and add a rectangle object with such bounds
 	 * on the drawing area
 	 */
