@@ -45,13 +45,13 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 	egueb_svg_renderable_user_bounds_get(target, &bounds);
 	//printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 
-	egueb_svg_length_set(&length, bounds.x + x, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.x + x, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_rect_x_set(thiz->bounds, &length);
-	egueb_svg_length_set(&length, bounds.y + y, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.y + y, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_rect_y_set(thiz->bounds, &length);
-	egueb_svg_length_set(&length, bounds.w, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.w, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_rect_width_set(thiz->bounds, &length);
-	egueb_svg_length_set(&length, bounds.h, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&length, bounds.h, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_rect_height_set(thiz->bounds, &length);
 done:
 	egueb_dom_node_unref(target);
@@ -108,9 +108,9 @@ Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 	egueb_svg_element_color_set(thiz->bounds, &color);
 	egueb_svg_element_stroke_set(thiz->bounds, &EGUEB_SVG_PAINT_CURRENT_COLOR);
 	egueb_svg_element_fill_set(thiz->bounds, &EGUEB_SVG_PAINT_NONE);
-	egueb_svg_length_set(&l, 1, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&l, 1, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_stroke_width_set(thiz->bounds, &l);
-	egueb_svg_length_set(&l, 99.9, EGUEB_SVG_UNIT_LENGTH_PERCENT);
+	egueb_svg_length_set(&l, 99.9, EGUEB_SVG_LENGTH_UNIT_PERCENT);
 	egueb_svg_element_rect_width_set(thiz->bounds, &l);
 	egueb_svg_element_rect_height_set(thiz->bounds, &l);
 	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->bounds), NULL);

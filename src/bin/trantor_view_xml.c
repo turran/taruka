@@ -111,7 +111,7 @@ static void _attrs_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *
 
 		tspan = egueb_svg_element_tspan_new();
 		font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
-		egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_UNIT_LENGTH_PX);
+		egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 		egueb_svg_element_font_size_set(tspan, &font_size);
 
 		tnode = egueb_dom_text_new();
@@ -141,12 +141,12 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 	text = egueb_svg_element_text_new();
 
 	font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
-	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_font_size_set(text, &font_size);
 
-	egueb_svg_length_set(&y, 12 * data->level, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&y, 12 * data->level, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_text_y_set(text, &y);
-	egueb_svg_length_set(&x, 12 * data->tab, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&x, 12 * data->tab, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_text_x_set(text, &x);
 	tnode = egueb_dom_text_new();
 
@@ -233,12 +233,12 @@ static Eina_Bool _generate_text(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_
 	text = egueb_svg_element_text_new();
 
 	font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
-	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_font_size_set(text, &font_size);
 
-	egueb_svg_length_set(&y, 12 * data->level, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&y, 12 * data->level, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_text_y_set(text, &y);
-	egueb_svg_length_set(&x, 12 * data->tab, EGUEB_SVG_UNIT_LENGTH_PX);
+	egueb_svg_length_set(&x, 12 * data->tab, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_text_x_set(text, &x);
 
 	egueb_svg_color_components_from(&color, 0xff, 0, 0);
@@ -263,24 +263,24 @@ static Eina_Bool _generate_node(Egueb_Dom_Node *n, void *user_data)
 	type = egueb_dom_node_type_get(n);
 	switch (type)
 	{
-		case EGUEB_DOM_NODE_TYPE_ELEMENT_NODE:
+		case EGUEB_DOM_NODE_TYPE_ELEMENT:
 		_generate_element(data, n);
 		break;
 
-		case EGUEB_DOM_NODE_TYPE_TEXT_NODE:
+		case EGUEB_DOM_NODE_TYPE_TEXT:
 		_generate_text(data, n);
 		break;
 
-		case EGUEB_DOM_NODE_TYPE_ATTRIBUTE_NODE:
-		case EGUEB_DOM_NODE_TYPE_CDATA_SECTION_NODE:
-		case EGUEB_DOM_NODE_TYPE_ENTITY_REFERENCE_NODE:
-		case EGUEB_DOM_NODE_TYPE_ENTITY_NODE:
-		case EGUEB_DOM_NODE_TYPE_PROCESSING_INSTRUCTION_NODE:
-		case EGUEB_DOM_NODE_TYPE_COMMENT_NODE:
-		case EGUEB_DOM_NODE_TYPE_DOCUMENT_NODE:
-		case EGUEB_DOM_NODE_TYPE_DOCUMENT_TYPE_NODE:
-		case EGUEB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT_NODE:
-		case EGUEB_DOM_NODE_TYPE_NOTATION_NODE:
+		case EGUEB_DOM_NODE_TYPE_ATTRIBUTE:
+		case EGUEB_DOM_NODE_TYPE_CDATA_SECTION:
+		case EGUEB_DOM_NODE_TYPE_ENTITY_REFERENCE:
+		case EGUEB_DOM_NODE_TYPE_ENTITY:
+		case EGUEB_DOM_NODE_TYPE_PROCESSING_INSTRUCTION:
+		case EGUEB_DOM_NODE_TYPE_COMMENT:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT_TYPE:
+		case EGUEB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT:
+		case EGUEB_DOM_NODE_TYPE_NOTATION:
 		break;
 	}
 	return EINA_TRUE;
