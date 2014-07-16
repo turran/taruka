@@ -47,6 +47,7 @@ static void _trantor_ui_setup(Trantor *thiz)
 static Trantor * _trantor_new(const char *filename, int width, int height)
 {
 	Trantor *thiz;
+	Egueb_Dom_Node *doc = NULL;
 	Enesim_Stream *s;
 
 	thiz = calloc(1, sizeof(Trantor));
@@ -57,9 +58,9 @@ static Trantor * _trantor_new(const char *filename, int width, int height)
 		return NULL;
 	}
 
-	egueb_dom_parser_parse(s, &thiz->doc_svg);
+	egueb_dom_parser_parse(s, &doc);
 	enesim_stream_unref(s);
-	if (!thiz->doc_svg)
+	if (!doc)
 	{
 		free(thiz);
 		return NULL;
@@ -67,6 +68,8 @@ static Trantor * _trantor_new(const char *filename, int width, int height)
 
 	/* create our own eon widgets */
 	thiz->doc = eon_document_new();
+	thiz->svg = egueb_dom_document_document_element_get(doc);
+	egueb_dom_node_unref(doc);
 	_trantor_ui_setup(thiz);
 
 	thiz->window = efl_egueb_window_auto_new(egueb_dom_node_ref(thiz->doc),
@@ -74,11 +77,11 @@ static Trantor * _trantor_new(const char *filename, int width, int height)
 
 	if (!thiz->window)
 	{
-		egueb_dom_node_unref(thiz->doc_svg);
 		egueb_dom_node_unref(thiz->doc);
 		free(thiz);
 		return NULL;
 	}
+
 
 	return thiz;
 }
@@ -86,7 +89,7 @@ static Trantor * _trantor_new(const char *filename, int width, int height)
 static void _trantor_free(Trantor *thiz)
 {
 	egueb_dom_node_unref(thiz->doc);
-	egueb_dom_node_unref(thiz->doc_svg);
+	egueb_dom_node_unref(thiz->svg);
 	efl_egueb_window_free(thiz->window);
 	free(thiz);
 }
@@ -178,11 +181,6 @@ int main(int argc, char *argv[])
 Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_SELECTED;
 Egueb_Dom_String *TRANTOR_EVENT_ELEMENT_UNSELECTED;
 
-Egueb_Dom_Node * trantor_svg_get(Trantor *thiz)
-{
-	return egueb_dom_document_document_element_get(thiz->doc_svg);
-}
-
 void trantor_element_select(Trantor *thiz, Egueb_Dom_Node *n)
 {
 	Egueb_Dom_Event *ev;
@@ -209,9 +207,4 @@ void trantor_element_unselect(Trantor *thiz, Egueb_Dom_Node *n)
 			EINA_TRUE, EINA_FALSE, NULL, NULL);
 	egueb_dom_node_event_dispatch(n, ev, NULL);
 #endif
-}
-
-Egueb_Dom_Node * trantor_document_get(Trantor *thiz)
-{
-	return egueb_dom_node_ref(thiz->doc_svg);
 }

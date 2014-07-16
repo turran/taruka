@@ -46,13 +46,13 @@ static void _trantor_view_drawing_selected_cb(Egueb_Dom_Event *ev,
 	//printf("bounds %" EINA_EXTRA_RECTANGLE_FORMAT "\n", EINA_EXTRA_RECTANGLE_ARGS(&bounds));
 
 	egueb_svg_length_set(&length, bounds.x + x, EGUEB_SVG_LENGTH_UNIT_PX);
-	egueb_svg_element_rect_x_set(thiz->bounds, &length);
+	egueb_svg_element_rect_x_set_simple(thiz->bounds, &length);
 	egueb_svg_length_set(&length, bounds.y + y, EGUEB_SVG_LENGTH_UNIT_PX);
-	egueb_svg_element_rect_y_set(thiz->bounds, &length);
+	egueb_svg_element_rect_y_set_simple(thiz->bounds, &length);
 	egueb_svg_length_set(&length, bounds.w, EGUEB_SVG_LENGTH_UNIT_PX);
-	egueb_svg_element_rect_width_set(thiz->bounds, &length);
+	egueb_svg_element_rect_width_set_simple(thiz->bounds, &length);
 	egueb_svg_length_set(&length, bounds.h, EGUEB_SVG_LENGTH_UNIT_PX);
-	egueb_svg_element_rect_height_set(thiz->bounds, &length);
+	egueb_svg_element_rect_height_set_simple(thiz->bounds, &length);
 done:
 	egueb_dom_node_unref(target);
 }
@@ -85,6 +85,8 @@ Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 
 	thiz = calloc(1, sizeof(Trantor_View_Drawing));
 	thiz->t = t;
+
+	other_svg = t->svg;
 	/* create a svg doc like:
 	 * <svg>
 	 *   <image id="previewArea"> <!-- the original document is embedded -->
@@ -98,6 +100,8 @@ Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 	egueb_dom_node_child_append(thiz->doc, egueb_dom_node_ref(thiz->svg), NULL);
 
 	thiz->preview_area = egueb_svg_element_image_new();
+	egueb_svg_element_image_svg_set(thiz->preview_area, egueb_dom_node_ref(other_svg));
+
 	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->preview_area), NULL);
 
 	n = egueb_svg_element_rect_new();
@@ -111,19 +115,17 @@ Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 	egueb_svg_length_set(&l, 1, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_stroke_width_set(thiz->bounds, &l);
 	egueb_svg_length_set(&l, 99.9, EGUEB_SVG_LENGTH_UNIT_PERCENT);
-	egueb_svg_element_rect_width_set(thiz->bounds, &l);
-	egueb_svg_element_rect_height_set(thiz->bounds, &l);
+	egueb_svg_element_rect_width_set_simple(thiz->bounds, &l);
+	egueb_svg_element_rect_height_set_simple(thiz->bounds, &l);
 	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->bounds), NULL);
 
 	/* register the selected/unselected event */
-	other_svg = trantor_document_get(t);
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
 			_trantor_view_drawing_selected_cb,
 			EINA_FALSE, thiz);
 	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_UNSELECTED,
 			_trantor_view_drawing_unselected_cb,
 			EINA_FALSE, thiz);
-	egueb_dom_node_unref(other_svg);
 
 	/* our own widget */
 	n = eon_element_object_new();

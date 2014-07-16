@@ -294,7 +294,7 @@ void trantor_view_xml_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 
 	svg = egueb_svg_element_svg_new();
 	egueb_svg_element_overflow_set(svg, EGUEB_SVG_OVERFLOW_HIDDEN);
-	other_svg = trantor_svg_get(t);
+	other_svg = t->svg;
 
 	egueb_dom_document_element_set(xml_doc, egueb_dom_node_ref(svg));
 
@@ -308,6 +308,5 @@ void trantor_view_xml_new(Trantor *t, Egueb_Dom_Node *xml_doc)
 	_generate_node(other_svg,  &data);
 
 	egueb_dom_node_unref(svg);
-	egueb_dom_node_unref(other_svg);
 	egueb_dom_node_unref(xml_doc);
 }

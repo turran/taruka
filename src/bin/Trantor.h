@@ -10,17 +10,7 @@ typedef struct _Trantor
 {
 	Efl_Egueb_Window *window;
 	Egueb_Dom_Node *doc;
-	Egueb_Dom_Node *doc_svg;
-
-	char *location;
-	Evas_Object *o_drawing_area;
-	/* FIXME once this is split into lib
-	 * remove all objects. The Efl viewer
-	 * should just have a single evas object
-	 */
-	Evas_Object *o_svg;
-	Evas_Object *o_xml;
-	Evas_Object *o_drawing;
+	Egueb_Dom_Node *svg;
 } Trantor;
 
 void trantor_view_xml_new(Trantor *thiz, Egueb_Dom_Node *xml_doc);
