@@ -59,7 +59,6 @@ static Trantor * _trantor_new(const char *filename, int width, int height)
 	}
 
 	egueb_dom_parser_parse(s, &doc);
-	enesim_stream_unref(s);
 	if (!doc)
 	{
 		free(thiz);
