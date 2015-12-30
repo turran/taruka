@@ -8,11 +8,14 @@ m4_define([lt_cur], m4_eval(v_maj + v_min))
 m4_define([lt_rev], v_mic)
 m4_define([lt_age], v_min)
 
-AC_INIT([trantor], [v_ver], [enesim-devel@googlegroups.com])
+AC_INIT([taruka], [v_ver], [enesim-devel@googlegroups.com])
 AC_PREREQ([2.60])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
+
+## Add parameters for aclocal (keep in sync with Makefile.am)
+AC_SUBST(ACLOCAL_AMFLAGS, "-I m4 -I common/m4")
 
 AM_INIT_AUTOMAKE([1.6 dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -21,7 +24,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_CANONICAL_HOST
 
-requirements_trantor=""
+requirements_taruka=""
 
 efl_version="1.7.0"
 efl_egueb_version="0.0.1"
@@ -42,13 +45,13 @@ PKG_PROG_PKG_CONFIG
 
 case "$host_os" in
    mingw*)
-      requirements_trantor="${requirements_trantor} evil >= ${efl_version}"
+      requirements_taruka="${requirements_taruka} evil >= ${efl_version}"
    ;;
 esac
 
-requirements_trantor="eon >= ${eon_version} efl-egueb >= ${efl_egueb_version} egueb-dom >= ${egueb_version} egueb-svg >= ${egueb_version} ecore >= ${efl_version} ${requirements_trantor}"
-AC_SUBST([requirements_trantor])
-PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
+requirements_taruka="eon >= ${eon_version} efl-egueb >= ${efl_egueb_version} egueb-dom >= ${egueb_version} egueb-svg >= ${egueb_version} ecore >= ${efl_version} ${requirements_taruka}"
+AC_SUBST([requirements_taruka])
+PKG_CHECK_MODULES([TARUKA], [${requirements_taruka}])
 
 ### Checks for header files
 
@@ -63,7 +66,7 @@ PKG_CHECK_MODULES([TRANTOR], [${requirements_trantor}])
 
 AM_PROG_CC_C_O
 
-EFL_CHECK_COMPILER_FLAGS([TRANTOR], [-Wall -Wextra -Wshadow])
+EFL_CHECK_COMPILER_FLAGS([TARUKA], [-Wall -Wextra -Wshadow])
 
 
 ### Checks for linker characteristics
