@@ -120,10 +120,10 @@ Egueb_Dom_Node * trantor_view_drawing_new(Trantor *t)
 	egueb_dom_node_child_append(thiz->svg, egueb_dom_node_ref(thiz->bounds), NULL);
 
 	/* register the selected/unselected event */
-	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
+	egueb_dom_event_target_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_SELECTED,
 			_trantor_view_drawing_selected_cb,
 			EINA_FALSE, thiz);
-	egueb_dom_node_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_UNSELECTED,
+	egueb_dom_event_target_event_listener_add(other_svg, TRANTOR_EVENT_ELEMENT_UNSELECTED,
 			_trantor_view_drawing_unselected_cb,
 			EINA_FALSE, thiz);
 

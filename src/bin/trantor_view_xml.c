@@ -70,9 +70,16 @@ static void _element_name_out_cb(Egueb_Dom_Event *e, void *data)
 static void _attrs_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n, Egueb_Dom_Node *parent)
 {
 	Egueb_Dom_Node_Map_Named *attrs = NULL;
+	Egueb_Dom_String *space;
+	Egueb_Dom_String *equal;
+	Egueb_Dom_String *quote;
 	int count;
 	int i;
 
+
+	space = egueb_dom_string_new_with_string(" ");
+	equal = egueb_dom_string_new_with_string("=");
+	quote = egueb_dom_string_new_with_string("\"");
 	/* FIXME we moved the append here, because the node inserted is not propagating
 	 * the event for the children nodes of the inserted node
 	 */
@@ -89,7 +96,7 @@ static void _attrs_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *
 		Egueb_Dom_String *attr_value = NULL;
 		Egueb_Dom_Node *tspan;
 		Egueb_Dom_Node *tnode;
-		Egueb_Svg_Font_Size font_size;
+		Egueb_Css_Font_Size font_size;
 
 		attr = egueb_dom_node_map_named_at(attrs, i);
 		if (!attr) continue;
@@ -106,19 +113,24 @@ static void _attrs_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *
 		}
 
 		tnode = egueb_dom_text_new();
-		egueb_dom_character_data_append_data_inline(tnode, " ", NULL);
+		egueb_dom_character_data_data_append(tnode,
+				egueb_dom_string_ref(space), NULL);
 		egueb_dom_node_child_append(parent, tnode, NULL);
 
 		tspan = egueb_svg_element_tspan_new();
-		font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
+		font_size.type = EGUEB_CSS_FONT_SIZE_TYPE_LENGTH;
 		egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 		egueb_svg_element_font_size_set(tspan, &font_size);
 
 		tnode = egueb_dom_text_new();
-		egueb_dom_character_data_append_data(tnode, attr_name, NULL);
-		egueb_dom_character_data_append_data_inline(tnode, "=\"", NULL);
-		egueb_dom_character_data_append_data(tnode, attr_value, NULL);
-		egueb_dom_character_data_append_data_inline(tnode, "\"", NULL);
+		egueb_dom_character_data_data_append(tnode, attr_name, NULL);
+		egueb_dom_character_data_data_append(tnode,
+				egueb_dom_string_ref(space), NULL);
+		egueb_dom_character_data_data_append(tnode,
+				egueb_dom_string_ref(quote), NULL);
+		egueb_dom_character_data_data_append(tnode, attr_value, NULL);
+		egueb_dom_character_data_data_append(tnode,
+				egueb_dom_string_ref(quote), NULL);
 
 		egueb_dom_node_child_append(tspan, tnode, NULL);
 		egueb_dom_node_child_append(parent, tspan, NULL);
@@ -126,7 +138,10 @@ no_name:
 		egueb_dom_node_unref(attr);
 	}
 
-	egueb_dom_node_map_named_free(attrs);
+	egueb_dom_node_map_named_unref(attrs);
+	egueb_dom_string_unref(space);
+	egueb_dom_string_unref(equal);
+	egueb_dom_string_unref(quote);
 }
 
 static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n, Eina_Bool open)
@@ -134,13 +149,22 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 	Egueb_Dom_Node *text;
 	Egueb_Dom_Node *tnode;
 	Egueb_Dom_String *name;
-	Egueb_Svg_Font_Size font_size;
+	Egueb_Css_Font_Size font_size;
 	Egueb_Svg_Length x, y;
+	Egueb_Dom_String *sopen;
+	Egueb_Dom_String *sclose;
+	Egueb_Dom_String *sopenf;
+	Egueb_Dom_String *sclosef;
+
+	sopen = egueb_dom_string_new_with_string("<");
+	sclose = egueb_dom_string_new_with_string(">");
+	sopenf = egueb_dom_string_new_with_string("</");
+	sclosef = egueb_dom_string_new_with_string("/>");
 
 	name = egueb_dom_element_tag_name_get(n);
 	text = egueb_svg_element_text_new();
 
-	font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
+	font_size.type = EGUEB_CSS_FONT_SIZE_TYPE_LENGTH;
 	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_font_size_set(text, &font_size);
 
@@ -155,8 +179,9 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 		Egueb_Dom_Node *child = NULL;
 		Egueb_Svg_Color color;
 
-		egueb_dom_character_data_append_data_inline(tnode, "<", NULL);
-		egueb_dom_character_data_append_data(tnode, name, NULL);
+		egueb_dom_character_data_data_append(tnode,
+				egueb_dom_string_ref(sopen), NULL);
+		egueb_dom_character_data_data_append(tnode, name, NULL);
 		egueb_dom_node_child_append(text, tnode, NULL);
 
 		/* set the default fill paint to current color and the color to black */
@@ -165,9 +190,9 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 		egueb_svg_element_fill_set(text, &EGUEB_SVG_PAINT_CURRENT_COLOR);
 		/* add the needed callbacks */
 		egueb_dom_node_user_data_set(text, _trantor_view_xml_element_key_get(), n);
-		egueb_dom_node_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OVER,
+		egueb_dom_event_target_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OVER,
 				_element_name_over_cb, EINA_TRUE, data->thiz);
-		egueb_dom_node_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OUT,
+		egueb_dom_event_target_event_listener_add(text, EGUEB_DOM_EVENT_MOUSE_OUT,
 				_element_name_out_cb, EINA_TRUE, data->thiz);
 
 		/* now the attributes */
@@ -181,7 +206,8 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 		if (child)
 		{
 			data->tab++;
-			egueb_dom_character_data_append_data_inline(tnode, ">", NULL);
+			egueb_dom_character_data_data_append(tnode,
+					egueb_dom_string_ref(sclose), NULL);
 			egueb_dom_node_child_append(text, tnode, NULL);
 
 			do
@@ -201,15 +227,18 @@ static void _tag_create(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_Node *n,
 		}
 		else
 		{
-			egueb_dom_character_data_append_data_inline(tnode, "/>", NULL);
+			egueb_dom_character_data_data_append(tnode,
+					egueb_dom_string_ref(sclosef), NULL);
 			egueb_dom_node_child_append(text, tnode, NULL);
 		}
 	}
 	else
 	{
-		egueb_dom_character_data_append_data_inline(tnode, "</", NULL);
-		egueb_dom_character_data_append_data(tnode, name, NULL);
-		egueb_dom_character_data_append_data_inline(tnode, ">", NULL);
+		egueb_dom_character_data_data_append(tnode,
+					egueb_dom_string_ref(sopenf), NULL);
+		egueb_dom_character_data_data_append(tnode, name, NULL);
+		egueb_dom_character_data_data_append(tnode,
+					egueb_dom_string_ref(sclose), NULL);
 		egueb_dom_node_child_append(text, tnode, NULL);
 		egueb_dom_node_child_append(data->thiz->svg, text, NULL);
 	}
@@ -226,13 +255,13 @@ static Eina_Bool _generate_text(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_
 	Egueb_Dom_Node *text;
 	Egueb_Dom_Node *tnode;
 	Egueb_Dom_String *text_data;
-	Egueb_Svg_Font_Size font_size;
+	Egueb_Css_Font_Size font_size;
 	Egueb_Svg_Length x, y;
 	Egueb_Svg_Color color;
 
 	text = egueb_svg_element_text_new();
 
-	font_size.type = EGUEB_SVG_FONT_SIZE_TYPE_LENGTH;
+	font_size.type = EGUEB_CSS_FONT_SIZE_TYPE_LENGTH;
 	egueb_svg_length_set(&font_size.value.length, 12, EGUEB_SVG_LENGTH_UNIT_PX);
 	egueb_svg_element_font_size_set(text, &font_size);
 
@@ -247,7 +276,7 @@ static Eina_Bool _generate_text(Trantor_View_Xml_Generate_Data *data, Egueb_Dom_
 
 	tnode = egueb_dom_text_new();
 	text_data = egueb_dom_character_data_data_get(n);
-	egueb_dom_character_data_append_data(tnode, text_data, NULL);
+	egueb_dom_character_data_data_append(tnode, text_data, NULL);
 
 	egueb_dom_node_child_append(text, tnode, NULL);
 	egueb_dom_node_child_append(data->thiz->svg, text, NULL);

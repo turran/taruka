@@ -8,7 +8,7 @@
 
 typedef struct _Trantor
 {
-	Efl_Egueb_Window *window;
+	Egueb_Dom_Window *window;
 	Egueb_Dom_Node *doc;
 	Egueb_Dom_Node *svg;
 } Trantor;
