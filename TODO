@@ -1,0 +1,7 @@
++ Make the editor work by plugins
++ Each plugin must register a new mimetype + name
++ The editor on the New... option, must select from a set of mime types, SVG, EON, etc, etc
++ Such mimetype registered, document for say something, is fetchable by other plugins, i.e add dependable plugins
++ With such document, register value types for the property editor, define how it should be created. i.e register
+  mutation events on the element in order to refresh the values
++ Register ways of modifying the text editor too
