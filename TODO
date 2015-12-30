@@ -5,3 +5,9 @@
 + With such document, register value types for the property editor, define how it should be created. i.e register
   mutation events on the element in order to refresh the values
 + Register ways of modifying the text editor too
++ Tools ideas:
+  1. Drawer + playback
+  2. Property editor
+  3. Text editor of the XML itself
+  4. Script console + debug
+  5. Mounted filesystem
