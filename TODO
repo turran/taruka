@@ -11,3 +11,4 @@
   3. Text editor of the XML itself
   4. Script console + debug
   5. Mounted filesystem
+  6. A console to printf dom errors, eina_logs, etc
