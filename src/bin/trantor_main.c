@@ -89,7 +89,7 @@ static void _trantor_free(Trantor *thiz)
 {
 	egueb_dom_node_unref(thiz->doc);
 	egueb_dom_node_unref(thiz->svg);
-	efl_egueb_window_free(thiz->window);
+	egueb_dom_window_unref(thiz->window);
 	free(thiz);
 }
 
