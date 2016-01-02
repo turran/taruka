@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?>
+<eon>
+  <!-- main separation, on the lower side, some tools, on the upper side
+       the tree inspector, the graphics editor and another tool bar
+   -->
+  <paned id="paned01" orientation="vertical">
+    <!-- tree inspector, graphics editor and another toolbar -->
+    <paned id="paned02" orientation="horizontal">
+      <!-- graphics editor and another toolbar -->
+      <paned id="paned03" orientation="horizontal">
+      </paned>
+    </paned>
+  </paned>
+</eon>
