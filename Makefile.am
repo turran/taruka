@@ -13,7 +13,13 @@ install-sh \
 ltmain.sh \
 missing
 
+### The app itself
+
 include src/bin/Makefile.mk
+
+### Data
+
+include data/Makefile.mk
 
 EXTRA_DIST = \
 AUTHORS \
